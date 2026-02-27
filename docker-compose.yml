@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  db: 
+    image: postgres:15-alpine
+    container_name: coli_postgres
+    environment:
+      - POSTGRES_USER: coli_user
+      - POSTGRES_PASSWORD: coli_password
+      - POSTGRES_DB: coli_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+  backend:
+    build: .                         
+    container_name: coli_backend
+    ports:
+      - "8000:8000"                   
+    depends_on:
+      - db                         
+    environment:
+      - DATABASE_URL=postgresql://coli_user:coli_password@db:5432/coli_db
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
