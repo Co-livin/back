@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from database import Base
+from .database import Base
 
 
 class User(Base):
@@ -29,7 +29,7 @@ class SpaceMember(Base):
     __tablename__ = "space_members"
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     space_id = Column(Integer, ForeignKey("spaces.id"), primary_key=True)
-    role = Column(String, default="member")  # тут или 'owner', или 'member'
+    role = Column(String, default="member")  # тут или owner или member
     joined_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="spaces")
     space = relationship("Space", back_populates="members")
@@ -54,7 +54,7 @@ class Event(Base):
     id = Column(Integer, primary_key=True, index=True)
     space_id = Column(Integer, ForeignKey("spaces.id"))
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    event_type = Column(String)  # или TASK_COMPLETED, или MEMBER_JOINED
+    event_type = Column(String)  # а тут крч или TASK_COMPLETED или MEMBER_JOINED
     related_task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
     payload = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
