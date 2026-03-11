@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routers import auth
 
 app = FastAPI(title="Coli API", version="0.1.0")
-
 origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -14,9 +13,8 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def read_root():
-    return {
-        "project": "Coli",
-        "status": "Оно работает суккк!!!!",
-    }
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
