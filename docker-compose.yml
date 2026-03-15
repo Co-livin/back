@@ -31,6 +31,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ../front:/usr/share/nginx/html:ro
     depends_on:
       - backend
     restart: unless-stopped
