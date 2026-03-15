@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth
 from app.routers import spaces
+from app.routers import tasks
 
 app = FastAPI(title="Coli API", version="0.1.0")
 origins = ["*"]
@@ -21,3 +22,4 @@ def health_check():
 
 app.include_router(auth.router, prefix="/auth", tags=["authentication"])
 app.include_router(spaces.router, prefix="/spaces", tags=["spaces"])
+app.include_router(tasks.router, tags=["tasks"]) 
