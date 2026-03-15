@@ -31,3 +31,29 @@ def get_tasks(
     if not crud_task.check_user_in_space(db, user_id=current_user.id, space_id=space_id):
         raise HTTPException(status_code=403, detail="Доступ запрещен. Вы не состоите в этом пространстве.")
     return crud_task.get_active_tasks(db=db, space_id=space_id)
+
+
+@router.post("/tasks/{task_id}/complete", response_model=TaskResponse)
+def complete_task(
+    task_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    task = crud_task.get_task_by_id(db, task_id=task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+        
+    if not crud_task.check_user_in_space(db, user_id=current_user.id, space_id=task.space_id):
+        raise HTTPException(status_code=403, detail="Доступ запрещен, это чужая задача")
+        
+    if task.status == "done":
+        raise HTTPException(status_code=400, detail="Задача уже выполнена")
+
+    updated_task = crud_task.complete_task(
+        db=db, 
+        task=task, 
+        user_id=current_user.id, 
+        username=current_user.username
+    )
+    
+    return updated_task
