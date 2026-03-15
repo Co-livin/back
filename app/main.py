@@ -5,7 +5,7 @@ from app.routers import spaces
 from app.routers import tasks
 from app.routers import events
 
-app = FastAPI(title="Coli API", version="0.1.0")
+app = FastAPI(title="coli API", version="0.1.0", root_path="/api", docs_url="/docs")
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
