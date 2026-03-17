@@ -54,7 +54,7 @@ class Event(Base):
     id = Column(Integer, primary_key=True, index=True)
     space_id = Column(Integer, ForeignKey("spaces.id"))
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    event_type = Column(String)  # а тут крч или TASK_COMPLETED или MEMBER_JOINED
+    event_type = Column(String)
     related_task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
     payload = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
