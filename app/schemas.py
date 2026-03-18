@@ -4,8 +4,8 @@ from datetime import datetime
 
 
 class UserBase(BaseModel):
-    login_name: str
-    username: str
+    login: str
+    name: str
 
 
 class UserCreate(UserBase):

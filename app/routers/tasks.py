@@ -63,7 +63,7 @@ def complete_task(
         raise HTTPException(status_code=400, detail="Задача уже выполнена")
 
     updated_task = crud_task.complete_task(
-        db=db, task=task, user_id=current_user.id, username=current_user.username
+        db=db, task=task, user_id=current_user.id, username=current_user.name
     )
 
     return updated_task

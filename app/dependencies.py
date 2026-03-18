@@ -22,8 +22,8 @@ def get_current_user(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        login_name: str = payload.get("sub")
-        if login_name is None:
+        login: str = payload.get("sub")
+        if login is None:
             raise credentials_exception
 
     except jwt.ExpiredSignatureError:
@@ -31,7 +31,7 @@ def get_current_user(
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    user = get_user_by_login(db, login_name=login_name)
+    user = get_user_by_login(db, login=login)
     if user is None:
         raise credentials_exception
     return user

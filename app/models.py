@@ -7,8 +7,8 @@ from .database import Base
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    login_name = Column(String, unique=True, index=True)
-    username = Column(String)
+    login = Column(String, unique=True, index=True)
+    name = Column(String)
     password_hash = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     spaces = relationship("SpaceMember", back_populates="user")
@@ -29,7 +29,7 @@ class SpaceMember(Base):
     __tablename__ = "space_members"
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     space_id = Column(Integer, ForeignKey("spaces.id"), primary_key=True)
-    role = Column(String, default="member")  # тут или owner или member
+    role = Column(String, default="member")
     joined_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="spaces")
     space = relationship("Space", back_populates="members")
