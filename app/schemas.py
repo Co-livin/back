@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from datetime import datetime
 
@@ -64,3 +64,7 @@ class EventResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RoleUpdate(BaseModel):
+    role: str = Field(..., description="Может быть 'admin' или 'member'")
