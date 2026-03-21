@@ -4,6 +4,7 @@ from app.routers import auth
 from app.routers import spaces
 from app.routers import tasks
 from app.routers import events
+from app.routers import users
 
 app = FastAPI(title="coli API", version="0.1.0", root_path="/api", docs_url="/docs")
 origins = ["*"]
@@ -25,3 +26,4 @@ app.include_router(auth.router, prefix="/auth", tags=["authentication"])
 app.include_router(spaces.router, prefix="/spaces", tags=["spaces"])
 app.include_router(tasks.router, tags=["tasks"])
 app.include_router(events.router, tags=["events"])
+app.include_router(users.router, prefix=["/users"], tags=["users"])

@@ -25,6 +25,7 @@ class TaskBase(BaseModel):
     is_recurring: bool = False
     frequency_days: Optional[int] = None
     assignee_id: Optional[int] = None
+    next_due_date: Optional[datetime] = None
 
 
 class TaskCreate(TaskBase):

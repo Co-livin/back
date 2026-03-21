@@ -16,6 +16,7 @@ def create_task(db: Session, task: TaskCreate, space_id: int):
         is_recurring=task.is_recurring,
         frequency_days=task.frequency_days,
         assignee_id=task.assignee_id,
+        next_due_date=task.next_due_date, 
         status="active",
     )
     db.add(db_task)
