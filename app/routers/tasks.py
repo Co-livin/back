@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app.schemas import TaskCreate, TaskResponse
+from app.schemas import TaskCreate, TaskResponse, TaskUpdate
 from app.models import User
 from app.dependencies import get_current_user
 from app.crud import task as crud_task
@@ -67,3 +67,47 @@ def complete_task(
     )
 
     return updated_task
+
+
+@router.patch("/tasks/{task_id}", response_model=TaskResponse)
+def update_task(
+    task_id: int,
+    task_update: TaskUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    task = crud_task.get_task_by_id(db, task_id=task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+
+    if not crud_task.check_user_in_space(
+        db, user_id=current_user.id, space_id=task.space_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Доступ запрещен. Ты не состоишь в этом пространстве.",
+        )
+
+    updated_task = crud_task.update_task(db=db, task=task, update_data=task_update)
+    return updated_task
+
+
+@router.delete("/tasks/{task_id}")
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    task = crud_task.get_task_by_id(db, task_id=task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+
+    if not crud_task.check_user_in_space(
+        db, user_id=current_user.id, space_id=task.space_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Доступ запрещен. Ты не состоишь в этом пространстве.",
+        )
+    crud_task.delete_task(db=db, task=task)
+    return {"message": "Задача удалена"}

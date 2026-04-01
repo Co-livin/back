@@ -32,6 +32,14 @@ class TaskCreate(TaskBase):
     pass
 
 
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    is_recurring: Optional[bool] = None
+    frequency_days: Optional[int] = None
+    assignee_id: Optional[int] = None
+    next_due_date: Optional[datetime] = None
+
+
 class TaskResponse(TaskBase):
     id: int
     space_id: int

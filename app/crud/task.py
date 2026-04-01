@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from app.models import Task, SpaceMember, Event
-from app.schemas import TaskCreate
+from app.schemas import TaskCreate, TaskUpdate
 
 
 def check_user_in_space(db: Session, user_id: int, space_id: int) -> bool:
@@ -16,7 +16,7 @@ def create_task(db: Session, task: TaskCreate, space_id: int):
         is_recurring=task.is_recurring,
         frequency_days=task.frequency_days,
         assignee_id=task.assignee_id,
-        next_due_date=task.next_due_date, 
+        next_due_date=task.next_due_date,
         status="active",
     )
     db.add(db_task)
@@ -60,3 +60,18 @@ def complete_task(db: Session, task: Task, user_id: int, username: str):
     db.commit()
     db.refresh(task)
     return task
+
+
+def update_task(db: Session, task: Task, update_data: TaskUpdate):
+    update_dict = update_data.model_dump(exclude_unset=True)
+    for key, value in update_dict.items():
+        setattr(task, key, value)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def delete_task(db: Session, task: Task):
+    db.delete(task)
+    db.commit()
+    return True
