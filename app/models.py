@@ -47,6 +47,7 @@ class Task(Base):
     status = Column(String, default="active")
     space = relationship("Space", back_populates="tasks")
     assignee = relationship("User")
+    events = relationship("Event", back_populates="task", cascade="all, delete-orphan")
 
 
 class Event(Base):
@@ -59,3 +60,4 @@ class Event(Base):
     payload = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
     space = relationship("Space", back_populates="events")
+    task = relationship("Task", back_populates="events")
