@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.models import Event
 
 
-def get_space_events(db: Session, space_id: int, limit: int = 50):
+def get_space_events(db: Session, space_id: int, limit: int):
     return (
         db.query(Event)
         .filter(Event.space_id == space_id)
