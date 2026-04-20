@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models import Event
 from typing import Optional
 
+
 def get_space_events(db: Session, space_id: int, limit: Optional[int] = None):
     return (
         db.query(Event)

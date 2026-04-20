@@ -8,6 +8,7 @@ from app.models import User
 from app.dependencies import get_current_user
 from app.crud import task as crud_task
 
+
 router = APIRouter()
 
 
@@ -111,3 +112,16 @@ def delete_task(
         )
     crud_task.delete_task(db=db, task=task)
     return {"message": "Задача удалена"}
+
+
+@router.get("/spaces/{space_id}/tasks/upcoming-ids", response_model=List[int])
+def get_upcoming_tasks_ids(
+    space_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not crud_task.check_user_in_space(
+        db, user_id=current_user.id, space_id=space_id
+    ):
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
+    return crud_task.get_upcoming_tasks_ids(db=db, space_id=space_id)

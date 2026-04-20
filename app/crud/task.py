@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from app.models import Task, SpaceMember, Event
 from app.schemas import TaskCreate, TaskUpdate
+from sqlalchemy import or_
 
 
 def check_user_in_space(db: Session, user_id: int, space_id: int) -> bool:
@@ -49,11 +50,11 @@ def complete_task(db: Session, task: Task, user_id: int, username: str):
                 new_date += timedelta(days=int(task.frequency_days))
             task.next_due_date = new_date
         else:
-            task.next_due_date = now + timedelta(days=int(task.frequency_days))  
+            task.next_due_date = now + timedelta(days=int(task.frequency_days))
         task.status = "active"
     else:
         task.status = "done"
-        
+
     new_event = Event(
         space_id=task.space_id,
         user_id=user_id,
@@ -81,3 +82,17 @@ def delete_task(db: Session, task: Task):
     db.delete(task)
     db.commit()
     return True
+
+
+def get_upcoming_tasks_ids(db: Session, space_id: int):
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    return [
+        t.id
+        for t in db.query(Task.id)
+        .filter(
+            Task.space_id == space_id,
+            Task.status == "active",
+            or_(Task.next_due_date >= now, Task.next_due_date == None),
+        )
+        .all()
+    ]

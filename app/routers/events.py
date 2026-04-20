@@ -15,11 +15,13 @@ router = APIRouter()
 
 @router.get("/spaces/{space_id}/events", response_model=List[EventResponse])
 def get_events(
-    space_id: int, 
+    space_id: int,
     limit: int = 200,
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    if not crud_task.check_user_in_space(db, user_id=current_user.id, space_id=space_id):
+    if not crud_task.check_user_in_space(
+        db, user_id=current_user.id, space_id=space_id
+    ):
         raise HTTPException(status_code=403, detail="Доступ запрещен")
     return crud_event.get_space_events(db=db, space_id=space_id, limit=limit)
