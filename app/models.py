@@ -1,63 +1,66 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy import String, Integer, Boolean, ForeignKey, DateTime, JSON
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime
+from typing import Optional, List
 from .database import Base
-
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    login = Column(String, unique=True, index=True)
-    name = Column(String)
-    password_hash = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    spaces = relationship("SpaceMember", back_populates="user")
 
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    login: Mapped[str] = mapped_column(String, unique=True, index=True)
+    name: Mapped[str] = mapped_column(String)
+    password_hash: Mapped[str] = mapped_column(String)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    spaces: Mapped[List["SpaceMember"]] = relationship("SpaceMember", back_populates="user")
 
 class Space(Base):
     __tablename__ = "spaces"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    invite_code = Column(String, unique=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    members = relationship("SpaceMember", back_populates="space", cascade="all, delete")
-    tasks = relationship("Task", back_populates="space", cascade="all, delete")
-    events = relationship("Event", back_populates="space", cascade="all, delete")
 
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String)
+    invite_code: Mapped[str] = mapped_column(String, unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-class SpaceMember(Base):
-    __tablename__ = "space_members"
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    space_id = Column(Integer, ForeignKey("spaces.id"), primary_key=True)
-    role = Column(String, default="member")
-    joined_at = Column(DateTime, default=datetime.utcnow)
-    user = relationship("User", back_populates="spaces")
-    space = relationship("Space", back_populates="members")
-
+    members: Mapped[List["SpaceMember"]] = relationship("SpaceMember", back_populates="space", cascade="all, delete")
+    tasks: Mapped[List["Task"]] = relationship("Task", back_populates="space", cascade="all, delete")
+    events: Mapped[List["Event"]] = relationship("Event", back_populates="space", cascade="all, delete")
 
 class Task(Base):
     __tablename__ = "tasks"
-    id = Column(Integer, primary_key=True, index=True)
-    space_id = Column(Integer, ForeignKey("spaces.id"))
-    title = Column(String)
-    is_recurring = Column(Boolean, default=False)
-    frequency_days = Column(Integer, nullable=True)
-    next_due_date = Column(DateTime, nullable=True)
-    assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    status = Column(String, default="active")
-    space = relationship("Space", back_populates="tasks")
-    assignee = relationship("User")
-    events = relationship("Event", back_populates="task")
 
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    space_id: Mapped[int] = mapped_column(Integer, ForeignKey("spaces.id"))
+    title: Mapped[str] = mapped_column(String)
+    is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
+    frequency_days: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    next_due_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    assignee_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    status: Mapped[str] = mapped_column(String, default="active")
+
+    space: Mapped["Space"] = relationship("Space", back_populates="tasks")
+
+class SpaceMember(Base):
+    __tablename__ = "space_members"
+
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), primary_key=True)
+    space_id: Mapped[int] = mapped_column(Integer, ForeignKey("spaces.id"), primary_key=True)
+    role: Mapped[str] = mapped_column(String, default="member")
+    joined_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    user: Mapped["User"] = relationship("User", back_populates="spaces")
+    space: Mapped["Space"] = relationship("Space", back_populates="members")
 
 class Event(Base):
     __tablename__ = "events"
-    id = Column(Integer, primary_key=True, index=True)
-    space_id = Column(Integer, ForeignKey("spaces.id"))
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    event_type = Column(String)
-    related_task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
-    payload = Column(JSON)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    space = relationship("Space", back_populates="events")
-    task = relationship("Task", back_populates="events")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    space_id: Mapped[int] = mapped_column(Integer, ForeignKey("spaces.id"))
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    event_type: Mapped[str] = mapped_column(String)
+    related_task_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    space: Mapped["Space"] = relationship("Space", back_populates="events")

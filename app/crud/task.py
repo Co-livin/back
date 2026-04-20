@@ -41,13 +41,19 @@ def complete_task(db: Session, task: Task, user_id: int, username: str):
         "user_name": username,
         "action": "completed",
     }
-    if task.is_recurring and task.frequency_days:
-        task.next_due_date = datetime.now(timezone.utc) + timedelta(
-            days=task.frequency_days
-        )
+    if task.is_recurring and task.frequency_days is not None:
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        if task.next_due_date:
+            new_date = task.next_due_date + timedelta(days=int(task.frequency_days))
+            while new_date <= now:
+                new_date += timedelta(days=int(task.frequency_days))
+            task.next_due_date = new_date
+        else:
+            task.next_due_date = now + timedelta(days=int(task.frequency_days))  
+        task.status = "active"
     else:
         task.status = "done"
-
+        
     new_event = Event(
         space_id=task.space_id,
         user_id=user_id,
