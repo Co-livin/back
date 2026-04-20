@@ -114,8 +114,8 @@ def delete_task(
     return {"message": "Задача удалена"}
 
 
-@router.get("/spaces/{space_id}/tasks/upcoming-ids", response_model=List[int])
-def get_upcoming_tasks_ids(
+@router.get("/spaces/{space_id}/tasks/upcoming", response_model=List[TaskResponse])
+def get_upcoming(
     space_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -124,4 +124,4 @@ def get_upcoming_tasks_ids(
         db, user_id=current_user.id, space_id=space_id
     ):
         raise HTTPException(status_code=403, detail="Доступ запрещен")
-    return crud_task.get_upcoming_tasks_ids(db=db, space_id=space_id)
+    return crud_task.get_upcoming_tasks(db=db, space_id=space_id)

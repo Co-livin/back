@@ -84,15 +84,15 @@ def delete_task(db: Session, task: Task):
     return True
 
 
-def get_upcoming_tasks_ids(db: Session, space_id: int):
+def get_upcoming_tasks(db: Session, space_id: int):
     now = datetime.now(timezone.utc).replace(tzinfo=None)
-    return [
-        t.id
-        for t in db.query(Task.id)
+    return (
+        db.query(Task)
         .filter(
             Task.space_id == space_id,
             Task.status == "active",
             or_(Task.next_due_date >= now, Task.next_due_date == None),
         )
+        .order_by(Task.next_due_date.asc())
         .all()
-    ]
+    )
