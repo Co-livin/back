@@ -96,3 +96,17 @@ def get_upcoming_tasks(db: Session, space_id: int):
         .order_by(Task.next_due_date.asc())
         .all()
     )
+
+def get_overdue_tasks(db: Session, space_id: int):
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    return (
+        db.query(Task)
+        .filter(
+            Task.space_id == space_id,
+            Task.status == "active",
+            Task.next_due_date != None,
+            Task.next_due_date < now
+        )
+        .order_by(Task.next_due_date.desc())
+        .all()
+    )

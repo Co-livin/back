@@ -125,3 +125,16 @@ def get_upcoming(
     ):
         raise HTTPException(status_code=403, detail="Доступ запрещен")
     return crud_task.get_upcoming_tasks(db=db, space_id=space_id)
+
+
+@router.get("/spaces/{space_id}/tasks/overdue", response_model=List[TaskResponse])
+def get_overdue(
+    space_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not crud_task.check_user_in_space(
+        db, user_id=current_user.id, space_id=space_id
+    ):
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
+    return crud_task.get_overdue_tasks(db=db, space_id=space_id)
