@@ -31,7 +31,7 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    space_id: Mapped[int] = mapped_column(Integer, ForeignKey("spaces.id"))
+    space_id: Mapped[int] = mapped_column(Integer, ForeignKey("spaces.id"), index=True)
     title: Mapped[str] = mapped_column(String)
     is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
     frequency_days: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
@@ -56,7 +56,7 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    space_id: Mapped[int] = mapped_column(Integer, ForeignKey("spaces.id"))
+    space_id: Mapped[int] = mapped_column(Integer, ForeignKey("spaces.id"), index=True)
     user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     event_type: Mapped[str] = mapped_column(String)
     related_task_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)

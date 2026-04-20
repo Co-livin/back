@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get("/spaces/{space_id}/events", response_model=List[EventResponse])
 def get_events(
     space_id: int, 
-    limit: Optional[int] = None,
+    limit: int = 200,
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
