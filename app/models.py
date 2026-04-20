@@ -47,7 +47,7 @@ class Task(Base):
     status = Column(String, default="active")
     space = relationship("Space", back_populates="tasks")
     assignee = relationship("User")
-    events = relationship("Event", back_populates="task", cascade="all, delete-orphan")
+    events = relationship("Event", back_populates="task")
 
 
 class Event(Base):
