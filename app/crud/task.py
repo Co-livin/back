@@ -93,7 +93,6 @@ def get_upcoming_tasks(db: Session, space_id: int):
         .filter(
             Task.space_id == space_id,
             Task.status == "active",
-            Task.is_deleted == False,
             or_(Task.next_due_date >= today_start, Task.next_due_date == None),
         )
         .order_by(Task.next_due_date.asc())
@@ -112,7 +111,6 @@ def get_overdue_tasks(db: Session, space_id: int):
             Task.status == "active",
             Task.next_due_date != None,
             Task.next_due_date < today_start,
-            Task.is_deleted == False,
         )
         .order_by(Task.next_due_date.desc())
         .all()
