@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, time
 from app.models import Task, SpaceMember, Event
 from app.schemas import TaskCreate, TaskUpdate
 from sqlalchemy import or_
@@ -85,27 +85,34 @@ def delete_task(db: Session, task: Task):
 
 
 def get_upcoming_tasks(db: Session, space_id: int):
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    today_start = datetime.combine(
+        datetime.now(timezone.utc).replace(tzinfo=None), time.min
+    )
     return (
         db.query(Task)
         .filter(
             Task.space_id == space_id,
             Task.status == "active",
-            or_(Task.next_due_date >= now, Task.next_due_date == None),
+            Task.is_deleted == False,
+            or_(Task.next_due_date >= today_start, Task.next_due_date == None),
         )
         .order_by(Task.next_due_date.asc())
         .all()
     )
 
+
 def get_overdue_tasks(db: Session, space_id: int):
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    today_start = datetime.combine(
+        datetime.now(timezone.utc).replace(tzinfo=None), time.min
+    )
     return (
         db.query(Task)
         .filter(
             Task.space_id == space_id,
             Task.status == "active",
             Task.next_due_date != None,
-            Task.next_due_date < now
+            Task.next_due_date < today_start,
+            Task.is_deleted == False,
         )
         .order_by(Task.next_due_date.desc())
         .all()
