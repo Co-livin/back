@@ -51,8 +51,9 @@ class Task(Base):
         Integer, ForeignKey("users.id"), nullable=True
     )
     status: Mapped[str] = mapped_column(String, default="active")
-
     space: Mapped["Space"] = relationship("Space", back_populates="tasks")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
 
 class SpaceMember(Base):

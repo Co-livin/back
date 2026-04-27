@@ -1,11 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.routers import auth
 from app.routers import spaces
 from app.routers import tasks
 from app.routers import events
 from app.routers import users
+from app.planner import start_scheduler
 
+from contextlib import asynccontextmanager
+from prometheus_client import make_asgi_app
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
 app = FastAPI(title="coli API", version="0.1.0", root_path="/api", docs_url="/docs")
 origins = ["*"]
 app.add_middleware(
@@ -27,3 +36,6 @@ app.include_router(spaces.router, prefix="/spaces", tags=["spaces"])
 app.include_router(tasks.router, tags=["tasks"])
 app.include_router(events.router, tags=["events"])
 app.include_router(users.router, prefix="/users", tags=["users"])
+
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)

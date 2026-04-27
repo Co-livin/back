@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from app.models import Task, SpaceMember, Event
 from app.schemas import TaskCreate, TaskUpdate
 from sqlalchemy import or_
+from app.metrics import TASKS_CREATED, TASKS_COMPLETED, TASK_TIME_TO_ACTION, TASKS_OVERDUE
 
 
 def check_user_in_space(db: Session, user_id: int, space_id: int) -> bool:
@@ -23,6 +24,8 @@ def create_task(db: Session, task: TaskCreate, space_id: int):
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
+
+    TASKS_CREATED.labels(space_id=str(space_id)).inc()
     return db_task
 
 
@@ -37,13 +40,22 @@ def get_task_by_id(db: Session, task_id: int):
 
 
 def complete_task(db: Session, task: Task, user_id: int, username: str):
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    is_overdue = False
+    if task.next_due_date and now > task.next_due_date:
+        is_overdue = True
+
     event_payload = {
         "task_title": task.title,
         "user_name": username,
         "action": "completed",
     }
+
+    start_time = task.created_at or (now - timedelta(days=int(task.frequency_days or 0)))
+    duration_seconds = (now - start_time).total_seconds()
+    TASK_TIME_TO_ACTION.labels(space_id=str(task.space_id)).observe(duration_seconds)
+
     if task.is_recurring and task.frequency_days is not None:
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
         if task.next_due_date:
             new_date = task.next_due_date + timedelta(days=int(task.frequency_days))
             while new_date <= now:
@@ -52,8 +64,15 @@ def complete_task(db: Session, task: Task, user_id: int, username: str):
         else:
             task.next_due_date = now + timedelta(days=int(task.frequency_days))
         task.status = "active"
+        TASKS_CREATED.labels(space_id=str(task.space_id)).inc()
+        task.created_at = now 
     else:
         task.status = "done"
+        task.completed_at = now
+
+    TASKS_COMPLETED.labels(space_id=str(task.space_id)).inc()
+    if is_overdue:
+        TASKS_OVERDUE.labels(space_id=str(task.space_id)).inc()
 
     new_event = Event(
         space_id=task.space_id,
@@ -64,15 +83,6 @@ def complete_task(db: Session, task: Task, user_id: int, username: str):
     )
 
     db.add(new_event)
-    db.commit()
-    db.refresh(task)
-    return task
-
-
-def update_task(db: Session, task: Task, update_data: TaskUpdate):
-    update_dict = update_data.model_dump(exclude_unset=True)
-    for key, value in update_dict.items():
-        setattr(task, key, value)
     db.commit()
     db.refresh(task)
     return task
