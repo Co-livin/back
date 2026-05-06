@@ -98,3 +98,32 @@ def update_role(
         db, space_id, target_user_id, current_user.id, payload.role
     )
     return {"detail": f"Роль успешно изменена на {payload.role}"}
+
+
+@router.delete("/{space_id}")
+def delete_space(
+    space_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Удалить всё пространство целиком (только для владельца)"""
+    member_record = (
+        db.query(SpaceMember)
+        .filter_by(user_id=current_user.id, space_id=space_id)
+        .first()
+    )
+
+    if not member_record:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Вы не состоите в этом пространстве",
+        )
+    if member_record.role != "owner":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Только владелец может удалить пространство",
+        )
+    success = crud_space.delete_space(db=db, space_id=space_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Пространство не найдено")
+    return {"detail": "Пространство и все связанные данные успешно удалены"}

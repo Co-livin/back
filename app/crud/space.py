@@ -129,3 +129,16 @@ def change_member_role(
     db.commit()
     db.refresh(target)
     return target
+
+
+def get_space_by_id(db: Session, space_id: int):
+    return db.query(Space).filter(Space.id == space_id).first()
+
+
+def delete_space(db: Session, space_id: int):
+    db_space = db.query(Space).filter(Space.id == space_id).first()
+    if db_space:
+        db.delete(db_space)
+        db.commit()
+        return True
+    return False
